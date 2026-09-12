@@ -2,26 +2,26 @@
 
 
 
-# [Project Name] 🎯
+Door opening simulator 🎯
 
 
 ## Basic Details
-### Team Name: [Name]
+### Team Name: Scappers
 
 
 ### Team Members
-- Team Lead: [Name] - [College]
-- Member 2: [Name] - [College]
-- Member 3: [Name] - [College]
+- Team Lead: Ghanashyam - Christ College Irinjalakuda
+- Member 2: Mithun Manoj - Christ College Irinjalakuda
+
 
 ### Project Description
-[2-3 lines about what your project does]
+The projects simulates the opening of door with addable sounds and picture to pop up
 
 ### The Problem (that doesn't exist)
-[What ridiculous problem are you solving?]
+What if somebody doesnt know how to open a door 
 
 ### The Solution (that nobody asked for)
-[How are you solving it? Keep it fun!]
+This project simulates 
 
 ## Technical Details
 ### Technologies/Components Used
