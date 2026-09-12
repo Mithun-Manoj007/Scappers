@@ -329,6 +329,25 @@
         font-size: 30px;
         cursor: pointer;
     }
+
+    button.new {
+        margin-top: 15px;
+        padding: 10px 24px;
+        background: #1b1b1b;
+        border: 1px solid #444;
+        border-radius: 8px;
+        color: #ccc;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    button.new:hover {
+        background: #2c2c2c;
+        color: #fff;
+        border-color: #666;
+    }
     
 </style>
 </head>
@@ -445,7 +464,11 @@
     // ---------- Storage helpers ----------
     async function saveMedia() {
         try {
-            await window.storage.set(MEDIA_KEY, JSON.stringify(media), false);
+            if (window.storage && typeof window.storage.set === "function") {
+                await window.storage.set(MEDIA_KEY, JSON.stringify(media), false);
+            } else {
+                localStorage.setItem(MEDIA_KEY, JSON.stringify(media));
+            }
         } catch (e) {
             console.error("Failed to save media:", e);
         }
@@ -453,9 +476,16 @@
 
     async function loadMedia() {
         try {
-            const res = await window.storage.get(MEDIA_KEY, false);
-            if (res && res.value) {
-                media = JSON.parse(res.value);
+            if (window.storage && typeof window.storage.get === "function") {
+                const res = await window.storage.get(MEDIA_KEY, false);
+                if (res && res.value) {
+                    media = JSON.parse(res.value);
+                }
+            } else {
+                const val = localStorage.getItem(MEDIA_KEY);
+                if (val) {
+                    media = JSON.parse(val);
+                }
             }
         } catch (e) {
             // no media saved yet
@@ -464,7 +494,11 @@
 
     async function saveProgress() {
         try {
-            await window.storage.set(PROGRESS_KEY, JSON.stringify(progress), false);
+            if (window.storage && typeof window.storage.set === "function") {
+                await window.storage.set(PROGRESS_KEY, JSON.stringify(progress), false);
+            } else {
+                localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+            }
         } catch (e) {
             console.error("Failed to save progress:", e);
         }
@@ -472,9 +506,16 @@
 
     async function loadProgress() {
         try {
-            const res = await window.storage.get(PROGRESS_KEY, false);
-            if (res && res.value) {
-                progress = Object.assign(progress, JSON.parse(res.value));
+            if (window.storage && typeof window.storage.get === "function") {
+                const res = await window.storage.get(PROGRESS_KEY, false);
+                if (res && res.value) {
+                    progress = Object.assign(progress, JSON.parse(res.value));
+                }
+            } else {
+                const val = localStorage.getItem(PROGRESS_KEY);
+                if (val) {
+                    progress = Object.assign(progress, JSON.parse(val));
+                }
             }
         } catch (e) {
             // no progress saved yet
@@ -654,8 +695,8 @@
     })();
 })();
 </script>
-<form action="Front screen.html" method="get">
-    <button class="new"> Go Back</button>
+<form action="index.html" method="get">
+    <button class="new" type="submit">← Go Back</button>
 </form>
 
 </body>
