@@ -4,31 +4,40 @@
     <title>My Website</title>
 
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
         body {
             background-image: url("images.jpg");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            background-attachment: fixed;
         }
         .heading{
             text-align:center;
-            color:rgb(176, 4, 176);
-            font-size:50px;
+            font-weight:bold;
+            color:rgb(255, 209, 102);
+            font-size:100px;
 
 
         }
         .first{
             border:none;
             background:none;
-            color:rgb(82, 4, 121);
+            font-weight:bold;
+            text-shadow:2px 2px 4px black; ;
+            color:rgb(17,24,39);
             height:50px;
             width:100px;
-            font-size:50px;
+            font-size:40px;
             cursor:pointer;
 
         }
         .first:hover {
-            color:rgb(7, 23, 148)
+            color:rgb(231, 111, 81);
+            transition: color 0.3s ease;
         }
 
         
@@ -38,7 +47,8 @@
 <body>
 
     <h1 class="heading" >Welcome!</h1>
-    <button class="first">Start</button>
-
+    <form action="open-the-door.html" method="get">
+    <button class="first" type="submit">Start</button>
+    </form>
 </body>
 </html>
