@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open the Door</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: #111;
+        font-family: Arial, sans-serif;
+        overflow-x: hidden;
+        padding: 40px 15px 100px;
+        gap: 30px;
+        color: #eee;
+    }
+
+    .scene {
+        position: relative;
+        width: 320px;
+        height: 500px;
+        perspective: 1200px;
+    }
+
+    /* Door frame */
+    .door-frame {
+        position: absolute;
+        width: 320px;
+        height: 500px;
+        background: #3b2415;
+        border: 14px solid #24150d;
+        box-shadow: 0 0 40px rgba(0,0,0,0.7);
+    }
+
+    /* Darkness behind the door */
+    .inside {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        width: 292px;
+        height: 472px;
+        background: #050505;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .inside img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 1.2s ease 0.6s;
+    }
+
+    .inside.revealed img {
+        opacity: 1;
+    }
+
+    /* Door */
+    .door {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        width: 292px;
+        height: 472px;
+        background: linear-gradient(
+            90deg,
+            #542d17,
+            #713e21 50%,
+            #4b2815
+        );
+        transform-origin: left center;
+        transition: transform 2s cubic-bezier(.65,0,.35,1);
+        transform-style: preserve-3d;
+    }
+
+    /* Door panels */
+    .panel {
+        position: absolute;
+        border: 5px solid #351b0e;
+        background: rgba(255,255,255,0.03);
+    }
+
+    .panel.one {
+        width: 190px;
+        height: 145px;
+        left: 51px;
+        top: 45px;
+    }
+
+    .panel.two {
+        width: 190px;
+        height: 210px;
+        left: 51px;
+        top: 215px;
+    }
+
+    /* Door knob */
+    .knob {
+        position: absolute;
+        right: 28px;
+        top: 245px;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #fff, #aaa 25%, #555 70%);
+        box-shadow: 2px 2px 5px #111;
+    }
+
+    /* Open animation */
+    .door.open {
+        transform: rotateY(-105deg);
+    }
+
+    .controls {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+    }
+
+    button.main-btn {
+        padding: 15px 45px;
+        border: none;
+        border-radius: 8px;
+        background: white;
+        color: #111;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        letter-spacing: 2px;
+    }
+
+    button.main-btn:hover {
+        background: #ddd;
+    }
+
+    button.main-btn:active {
+        transform: scale(0.96);
+    }
+
+    /* Upload panel */
+    .uploads {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 500px;
+    }
+
+    .upload-card {
+        background: #1b1b1b;
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        min-width: 140px;
+    }
+
+    .upload-card label {
+        cursor: pointer;
+        background: #292929;
+        border: 1px solid #444;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+    }
+
+    .upload-card label:hover {
+        background: #333;
+    }
+
+    .upload-card input[type="file"] {
+        display: none;
+    }
+
+    .upload-card .status {
+        color: #7fd17f;
+        font-size: 11px;
+        min-height: 14px;
+    }
+
+    .upload-card .clear-btn {
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 11px;
+        text-decoration: underline;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    /* Achievements */
+    .achievements {
+        width: 100%;
+        max-width: 500px;
+        background: #1b1b1b;
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 16px 20px;
+    }
+
+    .achievements h3 {
+        margin: 0 0 12px;
+        font-size: 15px;
+        letter-spacing: 1px;
+        color: #ccc;
+    }
+
+    .ach-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 0;
+        font-size: 13px;
+        border-bottom: 1px solid #262626;
+    }
+
+    .ach-row:last-child {
+        border-bottom: none;
+    }
+
+    .ach-icon {
+        width: 20px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .ach-text {
+        flex: 1;
+        color: #999;
+    }
+
+    .ach-row.done .ach-text {
+        color: #fff;
+    }
+
+    .ach-row.done .ach-icon {
+        color: #ffd75e;
+    }
+
+    .stats-line {
+        margin-top: 10px;
+        font-size: 11px;
+        color: #666;
+        text-align: center;
+    }
+
+    .complete-banner {
+        display: none;
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+        background: linear-gradient(90deg,#3a2f0a,#5a4a10);
+        border: 1px solid #ffd75e;
+        border-radius: 10px;
+        padding: 16px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        color: #ffe9a8;
+    }
+
+    .complete-banner.show {
+        display: block;
+    }
+
+    .reset-link {
+        background: none;
+        border: none;
+        color: #555;
+        font-size: 11px;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    /* Image popup modal */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.85);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        padding: 20px;
+    }
+
+    .modal-overlay.show {
+        display: flex;
+    }
+
+    .modal-overlay img {
+        max-width: 90vw;
+        max-height: 80vh;
+        border-radius: 10px;
+        box-shadow: 0 0 60px rgba(255,255,255,0.15);
+        animation: pop-in 0.4s ease;
+    }
+
+    @keyframes pop-in {
+        from { transform: scale(0.7); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 24px;
+        right: 30px;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 30px;
+        cursor: pointer;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="scene">
+
+    <div class="door-frame">
+        <div class="inside" id="inside"></div>
+
+        <div class="door" id="door">
+            <div class="panel one"></div>
+            <div class="panel two"></div>
+            <div class="knob"></div>
+        </div>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button class="main-btn" id="openButton">OPEN</button>
+</div>
+
+<div class="uploads">
+    <div class="upload-card">
+        <strong>🎵 Door Audio</strong>
+        <label for="audioInput">Choose file</label>
+        <input type="file" id="audioInput" accept="audio/*">
+        <div class="status" id="audioStatus">No audio saved</div>
+        <button class="clear-btn" id="clearAudio">clear</button>
+    </div>
+    <div class="upload-card">
+        <strong>🖼️ Reveal Image</strong>
+        <label for="imageInput">Choose file</label>
+        <input type="file" id="imageInput" accept="image/*">
+        <div class="status" id="imageStatus">No image saved</div>
+        <button class="clear-btn" id="clearImage">clear</button>
+    </div>
+</div>
+
+<div class="achievements">
+    <h3>ACHIEVEMENTS</h3>
+    <div class="ach-row" id="ach-open10">
+        <div class="ach-icon">○</div>
+        <div class="ach-text">Open the door 10 times</div>
+    </div>
+    <div class="ach-row" id="ach-open20">
+        <div class="ach-icon">○</div>
+        <div class="ach-text">Open the door 20 times</div>
+    </div>
+    <div class="ach-row" id="ach-audio10">
+        <div class="ach-icon">○</div>
+        <div class="ach-text">Open the door 10 times with audio playing</div>
+    </div>
+    <div class="ach-row" id="ach-image">
+        <div class="ach-icon">○</div>
+        <div class="ach-text">Open the door with a reveal image set</div>
+    </div>
+    <div class="stats-line" id="statsLine">Opens: 0 · With audio: 0</div>
+</div>
+
+<div class="complete-banner" id="completeBanner">
+    🎉 GAME COMPLETE — every achievement unlocked! 🎉
+</div>
+
+<button class="reset-link" id="resetProgress">reset progress</button>
+
+<div class="modal-overlay" id="modalOverlay">
+    <button class="modal-close" id="modalClose">&times;</button>
+    <img id="modalImage" src="" alt="Revealed">
+</div>
+
+<audio id="doorAudio"></audio>
+
+<script>
+(function () {
+    const door = document.getElementById("door");
+    const inside = document.getElementById("inside");
+    const button = document.getElementById("openButton");
+    const audioInput = document.getElementById("audioInput");
+    const imageInput = document.getElementById("imageInput");
+    const audioStatus = document.getElementById("audioStatus");
+    const imageStatus = document.getElementById("imageStatus");
+    const clearAudioBtn = document.getElementById("clearAudio");
+    const clearImageBtn = document.getElementById("clearImage");
+    const doorAudio = document.getElementById("doorAudio");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalImage = document.getElementById("modalImage");
+    const modalClose = document.getElementById("modalClose");
+    const statsLine = document.getElementById("statsLine");
+    const completeBanner = document.getElementById("completeBanner");
+    const resetProgress = document.getElementById("resetProgress");
+
+    const MEDIA_KEY = "door-game-media";
+    const PROGRESS_KEY = "door-game-progress";
+
+    let media = { audio: null, image: null };
+    let progress = {
+        opens: 0,
+        opensWithAudio: 0,
+        openedWithImage: false,
+        achievements: {
+            open10: false,
+            open20: false,
+            audio10: false,
+            image: false
+        },
+        gameComplete: false
+    };
+
+    let isOpen = false;
+
+    // ---------- Storage helpers ----------
+    async function saveMedia() {
+        try {
+            await window.storage.set(MEDIA_KEY, JSON.stringify(media), false);
+        } catch (e) {
+            console.error("Failed to save media:", e);
+        }
+    }
+
+    async function loadMedia() {
+        try {
+            const res = await window.storage.get(MEDIA_KEY, false);
+            if (res && res.value) {
+                media = JSON.parse(res.value);
+            }
+        } catch (e) {
+            // no media saved yet
+        }
+    }
+
+    async function saveProgress() {
+        try {
+            await window.storage.set(PROGRESS_KEY, JSON.stringify(progress), false);
+        } catch (e) {
+            console.error("Failed to save progress:", e);
+        }
+    }
+
+    async function loadProgress() {
+        try {
+            const res = await window.storage.get(PROGRESS_KEY, false);
+            if (res && res.value) {
+                progress = Object.assign(progress, JSON.parse(res.value));
+            }
+        } catch (e) {
+            // no progress saved yet
+        }
+    }
+
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // ---------- UI refresh ----------
+    function refreshMediaUI() {
+        audioStatus.textContent = media.audio ? "✔ Audio saved" : "No audio saved";
+        imageStatus.textContent = media.image ? "✔ Image saved" : "No image saved";
+        if (media.audio) doorAudio.src = media.audio;
+    }
+
+    function refreshAchievementsUI() {
+        setRow("ach-open10", progress.achievements.open10);
+        setRow("ach-open20", progress.achievements.open20);
+        setRow("ach-audio10", progress.achievements.audio10);
+        setRow("ach-image", progress.achievements.image);
+        statsLine.textContent =
+            `Opens: ${progress.opens} · With audio: ${progress.opensWithAudio}`;
+        completeBanner.classList.toggle("show", progress.gameComplete);
+    }
+
+    function setRow(id, done) {
+        const row = document.getElementById(id);
+        row.classList.toggle("done", done);
+        row.querySelector(".ach-icon").textContent = done ? "★" : "○";
+    }
+
+    function checkAchievements() {
+        const a = progress.achievements;
+        if (progress.opens >= 10) a.open10 = true;
+        if (progress.opens >= 20) a.open20 = true;
+        if (progress.opensWithAudio >= 10) a.audio10 = true;
+        if (progress.openedWithImage) a.image = true;
+
+        if (a.open10 && a.open20 && a.audio10 && a.image && !progress.gameComplete) {
+            progress.gameComplete = true;
+        }
+        refreshAchievementsUI();
+    }
+
+    // ---------- Door open/close ----------
+    function openDoor() {
+        door.classList.add("open");
+        button.textContent = "CLOSE";
+        isOpen = true;
+
+        progress.opens += 1;
+
+        if (media.audio) {
+            progress.opensWithAudio += 1;
+            try {
+                doorAudio.currentTime = 0;
+                doorAudio.play().catch(() => {});
+            } catch (e) {}
+        }
+
+        if (media.image) {
+            progress.openedWithImage = true;
+            inside.classList.add("revealed");
+            setTimeout(() => {
+                modalImage.src = media.image;
+                modalOverlay.classList.add("show");
+            }, 900);
+        }
+
+        checkAchievements();
+        saveProgress();
+    }
+
+    function closeDoor() {
+        door.classList.remove("open");
+        button.textContent = "OPEN";
+        isOpen = false;
+        inside.classList.remove("revealed");
+        doorAudio.pause();
+    }
+
+    button.addEventListener("click", () => {
+        if (isOpen) {
+            closeDoor();
+        } else {
+            openDoor();
+        }
+    });
+
+    // ---------- Uploads ----------
+    audioInput.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        audioStatus.textContent = "Saving...";
+        try {
+            const base64 = await fileToBase64(file);
+            media.audio = base64;
+            await saveMedia();
+            refreshMediaUI();
+        } catch (err) {
+            audioStatus.textContent = "Failed to save";
+        }
+    });
+
+    imageInput.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        imageStatus.textContent = "Saving...";
+        try {
+            const base64 = await fileToBase64(file);
+            media.image = base64;
+            const imgEl = document.createElement("img");
+            imgEl.src = base64;
+            inside.innerHTML = "";
+            inside.appendChild(imgEl);
+            await saveMedia();
+            refreshMediaUI();
+        } catch (err) {
+            imageStatus.textContent = "Failed to save";
+        }
+    });
+
+    clearAudioBtn.addEventListener("click", async () => {
+        media.audio = null;
+        doorAudio.src = "";
+        await saveMedia();
+        refreshMediaUI();
+    });
+
+    clearImageBtn.addEventListener("click", async () => {
+        media.image = null;
+        inside.innerHTML = "";
+        await saveMedia();
+        refreshMediaUI();
+    });
+
+    // ---------- Modal ----------
+    modalClose.addEventListener("click", () => {
+        modalOverlay.classList.remove("show");
+    });
+    modalOverlay.addEventListener("click", (e) => {
+        if (e.target === modalOverlay) modalOverlay.classList.remove("show");
+    });
+
+    // ---------- Reset ----------
+    resetProgress.addEventListener("click", async () => {
+        progress = {
+            opens: 0,
+            opensWithAudio: 0,
+            openedWithImage: false,
+            achievements: { open10: false, open20: false, audio10: false, image: false },
+            gameComplete: false
+        };
+        await saveProgress();
+        refreshAchievementsUI();
+    });
+
+    // ---------- Init ----------
+    (async function init() {
+        await loadMedia();
+        if (media.image) {
+            const imgEl = document.createElement("img");
+            imgEl.src = media.image;
+            inside.appendChild(imgEl);
+        }
+        refreshMediaUI();
+
+        await loadProgress();
+        refreshAchievementsUI();
+    })();
+})();
+</script>
+
+</body>
+</html>
